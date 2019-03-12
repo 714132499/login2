@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="layer/theme/default/layer.css">
+    <script src="jquery.min.js"></script>
+    <script src="layer/layer.js"></script>
+</head>
+<body>
+<form id="form" onsubmit="return false;">
+    <input type="text" id="surname" placeholder="姓">
+    <input type="text" id="Last_name" placeholder="名">
+    <input type="text" id="Email" placeholder="邮箱">
+    <input type="text" id="price" placeholder="大于0的数,小数点后保留4位">
+    <input type="text" id="eth_address" placeholder="eth_address">
+    <input type="text" id="wxr_address" placeholder="wxr_address">
+</form>
+
+<button type="button" id="btn">提交</button>
+<script>
+    $('#price').keyup(function () {
+        let number = $('#price').val();
+        let verify = function (msg) {
+            layer.msg(msg, {
+                time: 1000
+            });
+            return false;
+        }
+        if (number <= 0 || number=='') {
+            verify('数值必须大于0')
+        } else {
+            //有小数点情况
+            if (number.indexOf(".") != -1) {
+                let n = (number.split('.')).length - 1; //小数点出现的次数
+                if (n > 1) {
+                    //小数点出现多次
+                    $(this).val('');
+                    verify('书写错误，只能出现一个小数点！');
+                } else {                            //小数点出现一次
+                    let int = number.split('.')[0];
+                    let floor = number.split('.')[1];
+                    if (floor.length > 4) {
+                        floor = floor.slice(0, 4);
+                        $('#price').val(int + '.' + floor)
+                        verify('小数点后最多保留4位数字');
+                    }
+                }
+            }
+        }
+    });
+    $('#btn').click(function () {
+        //取值
+        var surname = $('#surname').val();
+        let name = $('#Last_name').val();
+        let Email = $('#Email').val();
+        let number = $('#price').val();
+        let eth_address = $('#eth_address').val();
+        let wxr_address = $('#wxr_address').val();
+
+        //正则
+        let reg_name = /\S/; //不为空
+        let reg_Email = /^([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+@([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+\.[a-zA-Z]{2,3}$/;
+        // let reg_number = /^[0-9]*$ /; //数字
+        //let reg_number = /^[0-9]*[1-9][0-9]*$/; //正整数(大于0 的整数)
+        let reg_number = /(^[1-9](\d+)?(\.\d{1,4})?$)|(^0$)|(^\d\.\d{1,4}$)/; //大于0,小数点后保留4位
+
+        //验证
+        let bool_surname = reg_name.test(surname);
+        let bool_name = reg_name.test(name);
+        let bool_Email = reg_Email.test(Email);
+        let bool_number = reg_number.test(number);
+        let bool_eth_address = reg_name.test(eth_address);
+        let bool_wxr_address = reg_name.test(wxr_address);
+
+        let verify = function (msg) {
+            layer.msg(msg, {
+                time: 1000
+            });
+            return false;
+        }
+
+
+        if (!bool_surname) {
+            verify('请填写您的姓氏！');
+        } else if (!bool_name) {
+            verify('请填写您的名字！');
+        } else if (Email == '') {
+            verify('邮箱不能为空！');
+        } else if (!bool_Email) {
+            verify('邮箱格式不正确！');
+        } else if (number == '') {
+            verify('数值不能为空！');
+        } else if (!bool_number) {
+            verify('值必须大于0,小数点后最多保留4位数字');
+        } else if (!bool_eth_address) {
+            verify('bool_eth_address 不能为空');
+        } else if (!bool_wxr_address) {
+            verify('bool_wxr_address 不能为空');
+        } else {
+            var json = {
+                surname: $.trim(surname).replace(/\s*/g,""),
+                name: $.trim(name).replace(/\s*/g,""),
+                email: $.trim(Email).replace(/\s*/g,""),
+                price: $.trim(number).replace(/\s*/g,""),
+                eth_address: $.trim(eth_address).replace(/\s*/g,""),
+                wxr_address: $.trim(wxr_address).replace(/\s*/g,""),
+            };
+            console.log(json)
+            $.ajax({
+                url: 'http://xx.com/home/trade/trade_create',
+                type: 'post',
+                // dataType: 'jsonp',
+                // jsonp: "callback",
+                data: json,
+                success(data) {
+                    console.log(data.msg);
+                    console.log(1);
+                    //清空表单数据
+                    /*  $('#name').val('');
+                      $('#Last_name').val('');
+                      $('#Email').val('');
+                      $('#number').val('');*/
+                },
+                error(err) {
+                    console.log(err)
+                    console.log(2);
+                }
+            })
+        }
+    })
+</script>
+</body>
+</html>
